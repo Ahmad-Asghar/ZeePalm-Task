@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1039016699287",
+    "project_id": "voice-writer-d437e",
+    "storage_bucket": "voice-writer-d437e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1039016699287:android:06f88fbd5f9a6f34e650d2",
+        "android_client_info": {
+          "package_name": "com.example.voicer_writer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDz57GxOwmrJqjuToS0xFz_fcfhfyKafg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
