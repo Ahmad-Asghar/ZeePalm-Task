@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import '../core/utils/app_colors.dart';
@@ -30,7 +31,7 @@ class CustomTextField extends StatelessWidget {
                 padding: EdgeInsets.only(bottom: 0.6.h),
                 child: CustomTextWidget(
                     title: title.toString(),
-                    fontSize: 4.1.w,
+                    fontSize: kIsWeb? 20: 4.1.w,
                     fontWeight: FontWeight.w600),
               )
             : const SizedBox(),
@@ -53,12 +54,12 @@ class CustomTextField extends StatelessWidget {
             textAlignVertical: TextAlignVertical.center,
             obscureText: obSecureText??false,
             style: TextStyle(
-                fontSize: 4.4.w, color: AppColors.fieldTextColor),
+                fontSize:kIsWeb? 20: 4.4.w, color: AppColors.fieldTextColor),
             decoration: InputDecoration(
                 contentPadding: EdgeInsets.symmetric(horizontal: 6.w),
                 hintText: hintText,
                 hintStyle: TextStyle(
-                    fontSize: 4.2.w, color: AppColors.greyTextColor),
+                    fontSize:kIsWeb? 20: 4.2.w, color: AppColors.greyTextColor),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
                   borderSide: BorderSide(

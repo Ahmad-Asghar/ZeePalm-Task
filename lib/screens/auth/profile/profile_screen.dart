@@ -6,11 +6,13 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:zeepalm_task/screens/auth/profile/provider/profile_pic_provider.dart';
 import 'package:zeepalm_task/screens/auth/profile/provider/user_profile_provider.dart';
 import '../../../core/utils/app_colors.dart';
+import '../../../core/utils/validation_utils.dart';
 import '../../../widgets/app_text.dart';
 import '../../../widgets/loading_indicator.dart';
 import '../../../widgets/main_button.dart';
 import '../../../widgets/profile_avatar.dart';
-
+import 'dart:io' as io;
+import 'package:flutter/foundation.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -33,7 +35,7 @@ class ProfileScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   SizedBox(width: double.maxFinite,height: 2.h),
-                  ProfileImageWidget(userProfilePicProvider: userProfileProvider,),
+                  ProfileImageWidget(userProfileProvider: userProfileProvider),
                   SizedBox(width: double.maxFinite,height: 1.h,),
                   CustomTextWidget(title: userProfileProvider.userModel.fullName, fontSize: 21.sp, fontWeight: FontWeight.w600,),
                   SizedBox(height: 1.h,),
@@ -43,15 +45,26 @@ class ProfileScreen extends StatelessWidget {
                   SizedBox(height: 3.h),
                   CustomMainButton(
                       color: AppColors.primaryColor,
-                      onTap: (){
+                      onTap: () async {
                         if(!userProfileProvider.isUpdating){
                           final profilePicProvider = Provider.of<ProfilePicProvider>(context, listen: false);
                           if(profilePicProvider.imagePath.isNotEmpty){
-                            userProfileProvider.updateUserImage(profilePicProvider.imagePath,context);
+                            var result =  await profilePicProvider.uploadImageToFirebase();
+                            if (result['isSuccess']) {
+                              userProfileProvider.userModel.picture = result['imageUrl'];
+                              bool updateModel = await userProfileProvider.updateUser(userProfileProvider.userModel);
+                              if (updateModel) {
+                                showSnackBar(context, result['responseData']);
+                              } else {
+                                showSnackBar(context, 'Failed to update user.', isError: true);
+                              }
+                            } else {
+                              showSnackBar(context, result['responseData'], isError: true);
+                            }
                           }
                         }
                       },
-                      child: userProfileProvider.isUpdating?const CustomLoadingIndicator():
+                      child: userProfileProvider.isUpdating?Center(child: const CustomLoadingIndicator()):
                       CustomTextWidget(title: 'Save',color: AppColors.white)
                   )
                 ],
@@ -71,20 +84,50 @@ class ProfileScreen extends StatelessWidget {
 
 
 
+
+
 class ProfileImageWidget extends StatelessWidget {
-  final UserProfileProvider userProfilePicProvider;
-  const ProfileImageWidget({super.key, required this.userProfilePicProvider});
+  final UserProfileProvider userProfileProvider;
+  const ProfileImageWidget({super.key, required this.userProfileProvider});
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ProfilePicProvider>(
       builder: (context, profileProvider, child) {
+        Widget imageWidget;
+
+        if (kIsWeb && profileProvider.webImageBytes != null) {
+          imageWidget = ClipOval(
+            child: Image.memory(
+              profileProvider.webImageBytes!,
+              fit: BoxFit.cover,
+              width: 110,
+              height: 110,
+            ),
+          );
+        } else if (!kIsWeb && profileProvider.imagePath.isNotEmpty) {
+          imageWidget = ClipOval(
+            child: Image.file(
+              io.File(profileProvider.imagePath),
+              fit: BoxFit.cover,
+              width: 110,
+              height: 110,
+            ),
+          );
+        } else {
+          imageWidget = buildAvatarImage(
+            userProfileProvider.userModel.picture,
+            userProfileProvider.userModel.fullName,
+            radius: 55,
+          );
+        }
+
         return Stack(
           alignment: Alignment.bottomRight,
           children: [
             Container(
-              width: 14.h,
-              height: 14.h,
+              width: 110,
+              height: 110,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 boxShadow: [
@@ -92,46 +135,25 @@ class ProfileImageWidget extends StatelessWidget {
                     color: Colors.grey.withOpacity(0.2),
                     spreadRadius: 2,
                     blurRadius: 5,
-                    offset: const Offset(0, 1),
+                    offset: Offset(0, 1),
                   ),
                 ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(2.0),
-                child: profileProvider.imagePath.isEmpty
-                    ? buildAvatarImage(
-                  userProfilePicProvider.userModel.picture,
-                  userProfilePicProvider.userModel.fullName,
-                  radius: 14.h / 2,
-                )
-                    : Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.greyTextColor,
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(100),
-                    child: Image.file(
-                      File(profileProvider.imagePath),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              ),
+              child: imageWidget,
             ),
             Padding(
-              padding: const EdgeInsets.all(3.0),
+              padding: const EdgeInsets.all(4.0),
               child: InkWell(
                 onTap: () async {
                   await profileProvider.pickImage(context);
                 },
                 child: CircleAvatar(
-                  radius: 15,
+                  radius: 16,
                   backgroundColor: AppColors.primaryColor,
                   child: Icon(
                     Icons.camera_alt_rounded,
-                    size: 17,
-                    color: AppColors.white,
+                    size: 18,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -142,4 +164,5 @@ class ProfileImageWidget extends StatelessWidget {
     );
   }
 }
+
 

@@ -25,7 +25,7 @@ class SignUpScreen extends StatelessWidget {
                      const AppNameWidget(),
                     SignUpFieldsWidget(signUpProvider: signUpProvider,),
                      SignUpActionButtonsWidgets(signUpProvider: signUpProvider,),
-
+                    SizedBox(height: 100,),
                   ],
                 ),
               ),

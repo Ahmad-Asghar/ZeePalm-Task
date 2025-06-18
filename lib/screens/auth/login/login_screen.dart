@@ -25,6 +25,7 @@ class LoginScreen extends StatelessWidget {
                   children: [
                    const  AppNameWidget(),
                     LoginFieldsWidget(loginProvider: loginProvider,),
+                     SizedBox(height: 20,),
                      LoginActionButtonsWidget(loginProvider: loginProvider,),
 
                   ],

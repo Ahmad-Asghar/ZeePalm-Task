@@ -1,13 +1,9 @@
 import 'dart:io' ;
-import 'dart:typed_data';
-import 'package:dio/dio.dart';
+import 'dart:io' as io;
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../model/video_model.dart';
 
 class HomeProvider extends ChangeNotifier {
@@ -41,67 +37,86 @@ class HomeProvider extends ChangeNotifier {
     required String caption,
     required String uploaderName,
     required String uploaderImage,
-  })
-  async {
+  }) async {
     try {
+      debugPrint("Opening file picker for video...");
+
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.video,
         allowMultiple: false,
-        withData: kIsWeb, // For web, pick bytes
+        withData: kIsWeb,
       );
 
-      if (result != null) {
-        String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-        String videoUrl = '';
+      if (result == null) {
+        debugPrint("No video selected. Exiting function.");
+        return;
+      }
 
-        if (kIsWeb) {
-          // Web upload via bytes
-          Uint8List fileBytes = result.files.single.bytes!;
-          UploadTask uploadTask = FirebaseStorage.instance
-              .ref('videos/$fileName')
-              .putData(fileBytes);
+      String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+      String videoUrl = '';
 
-          TaskSnapshot snapshot = await uploadTask;
-          videoUrl = await snapshot.ref.getDownloadURL();
-        } else {
-          // Mobile upload via file path
-          File videoFile = File(result.files.single.path!);
-          UploadTask uploadTask = FirebaseStorage.instance
-              .ref('videos/$fileName')
-              .putFile(videoFile);
+      debugPrint("Video file picked successfully. Filename: $fileName");
 
-          TaskSnapshot snapshot = await uploadTask;
-          videoUrl = await snapshot.ref.getDownloadURL();
+      if (kIsWeb) {
+        debugPrint("Running on Web platform.");
+
+        Uint8List fileBytes = result.files.single.bytes!;
+        debugPrint("File bytes obtained: ${fileBytes.lengthInBytes} bytes.");
+
+        UploadTask uploadTask = FirebaseStorage.instance
+            .ref('videos/$fileName')
+            .putData(fileBytes);
+
+        debugPrint("Uploading video to Firebase Storage...");
+
+        TaskSnapshot snapshot = await uploadTask;
+        videoUrl = await snapshot.ref.getDownloadURL();
+
+        debugPrint("Upload complete. Download URL: $videoUrl");
+      } else {
+        debugPrint("Running on Mobile/Desktop platform.");
+
+        final filePath = result.files.single.path;
+        if (filePath == null) {
+          debugPrint("File path is null. Exiting function.");
+          return;
         }
 
-        var docRef = await FirebaseFirestore.instance.collection('videos').add({
-          'videoUrl': videoUrl,
-          'caption': caption,
-          'likes': [],
-          'saves': [],
-          'uploaderName': uploaderName,
-          'uploaderImage': uploaderImage,
-        });
+        debugPrint("File path: $filePath");
 
-        _videos.insert(
-          0,
-          VideoModel(
-            id: docRef.id,
-            videoUrl: videoUrl,
-            caption: caption,
-            likes: [],
-            saves: [],
-            uploaderName: uploaderName,
-            uploaderImage: uploaderImage,
-          ),
-        );
+        io.File videoFile = io.File(filePath);
+        UploadTask uploadTask = FirebaseStorage.instance
+            .ref('videos/$fileName')
+            .putFile(videoFile);
 
-        notifyListeners();
+        debugPrint("Uploading video to Firebase Storage...");
+
+        TaskSnapshot snapshot = await uploadTask;
+        videoUrl = await snapshot.ref.getDownloadURL();
+
+        debugPrint("Upload complete. Download URL: $videoUrl");
       }
-    } catch (e) {
+
+      debugPrint("Saving video metadata to Firestore...");
+
+      var docRef = await FirebaseFirestore.instance.collection('videos').add({
+        'videoUrl': videoUrl,
+        'caption': caption,
+        'likes': [],
+        'saves': [],
+        'uploaderName': uploaderName,
+        'uploaderImage': uploaderImage,
+        'uploadedAt': DateTime.now(),
+      });
+
+      debugPrint("Video metadata saved successfully with document ID: ${docRef.id}");
+
+    } catch (e, stackTrace) {
       debugPrint("Error uploading video: $e");
+      debugPrint("Stack trace: $stackTrace");
     }
   }
+
 
   void toggleLike(VideoModel video, String userId) async {
     if (video.likes.contains(userId)) {
@@ -134,37 +149,6 @@ class HomeProvider extends ChangeNotifier {
   }
 
 
-  Future<void> downloadVideo(BuildContext context, VideoModel video) async {
-    try {
-      if (Platform.isAndroid) {
-        var status = await Permission.storage.request();
-        if (!status.isGranted) return;
-      }
-
-      final dio = Dio();
-      final dir = Platform.isAndroid
-          ? await getExternalStorageDirectory()
-          : await getApplicationDocumentsDirectory();
-
-      if (dir == null) return;
-
-      final savePath = "${dir.path}/${video.id ?? DateTime.now().millisecondsSinceEpoch}.mp4";
-
-      await dio.download(video.videoUrl, savePath, onReceiveProgress: (received, total) {
-        if (total != -1) {
-          debugPrint('Downloading: ${(received / total * 100).toStringAsFixed(0)}%');
-        }
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Video downloaded to $savePath")),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Download failed: $e")),
-      );
-    }
-  }
 
 
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:zeepalm_task/screens/auth/home/provider/home_provider.dart';
+import '../../../services/file_downloader.dart';
 import '../../../widgets/loading_indicator.dart';
 import '../profile/provider/user_profile_provider.dart';
 import 'model/video_model.dart';
@@ -168,7 +169,16 @@ class _VideoPlayerItemState extends State<VideoPlayerItem> {
               const SizedBox(height: 16),
               IconButton(
                 onPressed: () {
-              provider.downloadVideo(context, widget.video);
+                  FileDownloader.downloadFile(
+                    context: context,
+                    url: widget.video.videoUrl,
+                    fileName: widget.video.videoUrl.split('/').last,
+                    onProgress: (progress) {
+                      debugPrint("Downloading: ${progress.toStringAsFixed(0)}%");
+                    },
+                  );
+
+                 // provider.downloadVideo(context, widget.video);
                 },
                 icon: const Icon(Icons.download, color: Colors.white, size: 30),
               ),
