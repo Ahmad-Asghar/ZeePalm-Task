@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zeepalm_task/screens/auth/sign_up/provider/sign_up_provider.dart';
@@ -20,13 +21,18 @@ class SignUpScreen extends StatelessWidget {
             body: SingleChildScrollView(
               child: Padding(
                 padding:  EdgeInsets.symmetric(horizontal: SizeUtils.sidesPadding),
-                child: Column(
-                  children: [
-                     const AppNameWidget(),
-                    SignUpFieldsWidget(signUpProvider: signUpProvider,),
-                     SignUpActionButtonsWidgets(signUpProvider: signUpProvider,),
-                    SizedBox(height: 100,),
-                  ],
+                child: Center(
+                  child: SizedBox(
+                    width: kIsWeb?400:null,
+                    child: Column(
+                      children: [
+                         const AppNameWidget(),
+                        SignUpFieldsWidget(signUpProvider: signUpProvider,),
+                         SignUpActionButtonsWidgets(signUpProvider: signUpProvider,),
+                        SizedBox(height: 100,),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),

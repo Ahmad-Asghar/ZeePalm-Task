@@ -16,7 +16,7 @@ Widget buildAvatarImage(String imageUrl, String name, {double? radius, bool? sho
         ),
         radius,
       ),
-      placeholder: (context, url) => CustomLoadingIndicator(color: AppColors.primaryColor,),
+      placeholder: (context, url) => _buildInitialsAvatar(name, radius),
       errorWidget: (context, url, error) => _buildInitialsAvatar(name, radius),
     );
   }
@@ -33,7 +33,7 @@ Widget _buildInitialsAvatar(String name, double? radius) {
       child: CustomTextWidget(
       title: initial,
         color: AppColors.primaryColor,
-        fontSize: 21.sp,
+        fontSize: 17,
         fontWeight: FontWeight.w600,
       ),
     ),

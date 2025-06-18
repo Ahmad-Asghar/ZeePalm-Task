@@ -18,6 +18,5 @@ class AppRoutes {
     signUp: (_) => SignUpScreen(),
     root: (_) => RootScreen(),
 
-
   };
 }

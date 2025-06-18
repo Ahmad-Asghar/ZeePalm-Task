@@ -8,7 +8,6 @@ class UserPrefUtils {
   factory UserPrefUtils() {
     return _singleton;
   }
-
   UserPrefUtils._internal();
 
   static String get USER => "com.tiktok.app.user";

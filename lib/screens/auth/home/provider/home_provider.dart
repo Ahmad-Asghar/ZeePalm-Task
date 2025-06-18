@@ -16,13 +16,14 @@ class HomeProvider extends ChangeNotifier {
     fetchVideos();
   }
 
+  bool isUploading = false;
+
   Future<void> fetchVideos() async {
     try {
       isLoading = true;
       notifyListeners();
 
-      var snapshot = await FirebaseFirestore.instance.collection('videos').get();
-      _videos = snapshot.docs
+      var snapshot = await FirebaseFirestore.instance.collection('videos').orderBy('uploadedAt', descending: true).get();      _videos = snapshot.docs
           .map((doc) => VideoModel.fromMap(doc.data(), doc.id))
           .toList();
     } catch (e) {
@@ -39,6 +40,9 @@ class HomeProvider extends ChangeNotifier {
     required String uploaderImage,
   }) async {
     try {
+      isUploading = true;
+      notifyListeners();
+
       debugPrint("Opening file picker for video...");
 
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -49,6 +53,8 @@ class HomeProvider extends ChangeNotifier {
 
       if (result == null) {
         debugPrint("No video selected. Exiting function.");
+        isUploading = false;
+        notifyListeners();
         return;
       }
 
@@ -79,6 +85,8 @@ class HomeProvider extends ChangeNotifier {
         final filePath = result.files.single.path;
         if (filePath == null) {
           debugPrint("File path is null. Exiting function.");
+          isUploading = false;
+          notifyListeners();
           return;
         }
 
@@ -109,11 +117,16 @@ class HomeProvider extends ChangeNotifier {
         'uploadedAt': DateTime.now(),
       });
 
+      fetchVideos();
+
       debugPrint("Video metadata saved successfully with document ID: ${docRef.id}");
 
     } catch (e, stackTrace) {
       debugPrint("Error uploading video: $e");
       debugPrint("Stack trace: $stackTrace");
+    } finally {
+      isUploading = false;
+      notifyListeners();
     }
   }
 

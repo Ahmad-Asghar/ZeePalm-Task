@@ -9,6 +9,7 @@ import 'package:zeepalm_task/screens/auth/home/provider/home_provider.dart';
 import 'package:zeepalm_task/screens/auth/home/root_screen.dart';
 import 'package:zeepalm_task/screens/auth/profile/provider/profile_pic_provider.dart';
 import 'package:zeepalm_task/screens/auth/profile/provider/user_profile_provider.dart';
+import 'package:zeepalm_task/services/file_downloader.dart';
 import 'package:zeepalm_task/utils/platform/platform_io_or_stub.dart';
 import 'core/utils/app_colors.dart';
 import 'core/utils/navigator_services.dart';
@@ -57,13 +58,13 @@ Future<void> main() async {
           ChangeNotifierProvider(create: (_) => RootProvider()),
           ChangeNotifierProvider(create: (_) => UserProfileProvider()),
           ChangeNotifierProvider(create: (_) => ProfilePicProvider()),
+          ChangeNotifierProvider(create: (_) => DownloaderProvider()),
         ],
         child: const MyApp(),
       ),
     );
   } catch (e, stackTrace) {
-    debugPrint('🔥 Error during Firebase initialization: $e');
-    debugPrintStack(stackTrace: stackTrace);
+
   }
 }
 

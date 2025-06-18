@@ -9,7 +9,6 @@ class NavigationService {
       _buildPageRoute(routeName, arguments: arguments, animation: animation, transitionBuilder: transitionBuilder),
     );
   }
-
   Future<dynamic> pushReplacement(String routeName, {dynamic arguments, bool animation = false, RouteTransitionsBuilder? transitionBuilder}) {
     return navigatorKey.currentState!.pushReplacement(
       _buildPageRoute(routeName, arguments: arguments, animation: animation, transitionBuilder: transitionBuilder),

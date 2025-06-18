@@ -1,4 +1,5 @@
 
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:zeepalm_task/screens/auth/login/provider/login_provider.dart';
@@ -21,14 +22,19 @@ class LoginScreen extends StatelessWidget {
             body: SingleChildScrollView(
               child: Padding(
                 padding:  EdgeInsets.symmetric(horizontal: SizeUtils.sidesPadding),
-                child: Column(
-                  children: [
-                   const  AppNameWidget(),
-                    LoginFieldsWidget(loginProvider: loginProvider,),
-                     SizedBox(height: 20,),
-                     LoginActionButtonsWidget(loginProvider: loginProvider,),
+                child: Center(
+                  child: SizedBox(
+                    width: kIsWeb?400:null,
+                    child: Column(
+                      children: [
+                       const  AppNameWidget(),
+                        LoginFieldsWidget(loginProvider: loginProvider,),
+                         SizedBox(height: 20,),
+                         LoginActionButtonsWidget(loginProvider: loginProvider,),
 
-                  ],
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),

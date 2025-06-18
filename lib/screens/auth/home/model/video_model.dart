@@ -21,7 +21,6 @@ class VideoModel {
     this.isSaved = false,
   });
 
-  // From Firestore
   factory VideoModel.fromMap(Map<String, dynamic> data, String docId) {
     return VideoModel(
       id: docId,

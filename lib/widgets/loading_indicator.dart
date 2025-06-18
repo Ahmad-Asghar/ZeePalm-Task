@@ -6,13 +6,14 @@ import '../core/utils/app_colors.dart';
 
 class CustomLoadingIndicator extends StatelessWidget {
   final Color? color;
-   const CustomLoadingIndicator({super.key,this.color});
+  final double? size;
+   const CustomLoadingIndicator({super.key,this.color, this.size});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 3.h,
-      width: 3.h,
+      height: size??3.h,
+      width:size?? 3.h,
       child: Padding(
         padding: const EdgeInsets.all(0.0),
         child: CircularProgressIndicator(

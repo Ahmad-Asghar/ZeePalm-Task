@@ -8,7 +8,6 @@ class AppColors{
   static Color fieldTextColor =const Color(0xff524b6b);
 
 
-
   static Color white = Colors.white;
   static Color black = Colors.black;
   static Color red = Color(0xffaf0808);

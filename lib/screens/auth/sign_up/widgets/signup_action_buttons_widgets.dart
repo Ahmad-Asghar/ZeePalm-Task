@@ -22,6 +22,7 @@ class SignUpActionButtonsWidgets extends StatelessWidget {
           children: [
             Expanded(
                 child: CustomMainButton(
+
                   color: AppColors.primaryColor,
                   borderRadius: 15,
                   onTap: () {

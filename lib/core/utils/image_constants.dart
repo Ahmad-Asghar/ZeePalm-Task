@@ -14,9 +14,6 @@ class ImageConstants{
 
 
 
-
-
-
   // PNG Images
   static String APP = '${png_images_path}app_logo.png';
   static String APP_LOGO = '${png_images_path}logo.png';

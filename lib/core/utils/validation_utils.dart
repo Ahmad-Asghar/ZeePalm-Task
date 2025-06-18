@@ -31,7 +31,6 @@ bool validatePassword(String? password, {int minLength = 6}) {
   }
   return true;
 }
-
 bool validateField(String? value, {String fieldName = "Field"}) {
   if (value == null || value.isEmpty) {
     return false;

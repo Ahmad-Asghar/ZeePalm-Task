@@ -34,7 +34,7 @@ class CustomTextWidget extends StatelessWidget {
           fontFamily: 'Poppins',
           decoration: textDecoration,
           color: color,
-          fontSize: fontSize??16,
+          fontSize: fontSize??15,
           fontWeight: fontWeight,
           shadows: shadows
       ),

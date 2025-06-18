@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/utils/navigator_services.dart';
+import '../../../../routes/app_routes.dart';
 import '../model/user_model.dart';
 import '../repo/user_profile_repo.dart';
 import '../../../../core/utils/user_pref_utils.dart';
@@ -8,6 +11,7 @@ import 'profile_pic_provider.dart';
 
 class UserProfileProvider extends ChangeNotifier {
   bool isLoading = false;
+  bool isLoggingOut = false;
   bool isUpdating = false;
   late UserModel userModel;
   UserProfileRepo userProfileRepo = UserProfileRepo();
@@ -36,7 +40,7 @@ class UserProfileProvider extends ChangeNotifier {
     isUpdating = true;
     notifyListeners();
 
-    var result = await profilePicProvider.uploadImageToFirebase();
+    var result = await profilePicProvider.uploadImageToFirebase(context);
     if (result['isSuccess']) {
       userModel.picture = result['imageUrl'];
       bool updateModel = await updateUser(userModel);
@@ -62,4 +66,23 @@ class UserProfileProvider extends ChangeNotifier {
       return false;
     }
   }
+
+  Future<void> logout(BuildContext context) async {
+    isLoggingOut = true;
+    notifyListeners();
+
+    try {
+      await FirebaseAuth.instance.signOut();
+      await UserPrefUtils().setUserLoggedInStatus(false);
+      await UserPrefUtils().saveUserID('');
+      isLoggingOut = false;
+      notifyListeners();
+      NavigationService().pushReplacement(AppRoutes.login);
+    } catch (e) {
+      isLoggingOut = false;
+      notifyListeners();
+      showSnackBar(context, 'Logout failed', isError: true);
+    }
+  }
+
 }

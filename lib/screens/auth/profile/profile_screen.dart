@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
@@ -43,29 +41,50 @@ class ProfileScreen extends StatelessWidget {
                   SizedBox(height: 1.h),
                   CustomTextWidget(title: 'Created At: ${userProfileProvider.userModel.createdAt}',color: AppColors.greyTextColor),
                   SizedBox(height: 3.h),
-                  CustomMainButton(
-                      color: AppColors.primaryColor,
-                      onTap: () async {
-                        if(!userProfileProvider.isUpdating){
-                          final profilePicProvider = Provider.of<ProfilePicProvider>(context, listen: false);
-                          if(profilePicProvider.imagePath.isNotEmpty){
-                            var result =  await profilePicProvider.uploadImageToFirebase();
-                            if (result['isSuccess']) {
-                              userProfileProvider.userModel.picture = result['imageUrl'];
-                              bool updateModel = await userProfileProvider.updateUser(userProfileProvider.userModel);
-                              if (updateModel) {
-                                showSnackBar(context, result['responseData']);
-                              } else {
-                                showSnackBar(context, 'Failed to update user.', isError: true);
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CustomMainButton(
+                          color: AppColors.primaryColor,
+                          onTap: () async {
+                            if(!userProfileProvider.isUpdating){
+
+                              final profilePicProvider = Provider.of<ProfilePicProvider>(context, listen: false);
+                              if(profilePicProvider.imagePath.isNotEmpty || (kIsWeb && profilePicProvider.webImageBytes != null && profilePicProvider.webImageBytes!.isNotEmpty)) {
+                                userProfileProvider.isUpdating = true;
+                                userProfileProvider.notifyListeners();
+                                var result =  await profilePicProvider.uploadImageToFirebase(context);
+                                if (result['isSuccess']) {
+                                  userProfileProvider.userModel.picture = result['imageUrl'];
+                                  bool updateModel = await userProfileProvider.updateUser(userProfileProvider.userModel);
+                                  if (updateModel) {
+                                    showSnackBar(context, result['responseData']);
+                                  } else {
+                                    showSnackBar(context, 'Failed to update user.', isError: true);
+                                  }
+                                } else {
+                                  showSnackBar(context, result['responseData'], isError: true);
+                                }
                               }
-                            } else {
-                              showSnackBar(context, result['responseData'], isError: true);
+                              userProfileProvider.isUpdating = false;
+                              userProfileProvider.notifyListeners();
                             }
-                          }
-                        }
-                      },
-                      child: userProfileProvider.isUpdating?Center(child: const CustomLoadingIndicator()):
-                      CustomTextWidget(title: 'Save',color: AppColors.white)
+                          },
+                          child: userProfileProvider.isUpdating?const CustomLoadingIndicator():
+                          CustomTextWidget(title: 'Save',color: AppColors.white)
+                      ),
+                      SizedBox(width: 20),
+                      CustomMainButton(
+                          color: AppColors.red,
+                          onTap: () async {
+                            if(!userProfileProvider.isLoggingOut){
+                                 userProfileProvider.logout(context);
+                            }
+                          },
+                          child: userProfileProvider.isLoggingOut?const CustomLoadingIndicator():
+                          CustomTextWidget(title: 'Logout',color: AppColors.white)
+                      ),
+                    ],
                   )
                 ],
               ),
@@ -96,16 +115,24 @@ class ProfileImageWidget extends StatelessWidget {
       builder: (context, profileProvider, child) {
         Widget imageWidget;
 
-        if (kIsWeb && profileProvider.webImageBytes != null) {
+        if (kIsWeb && profileProvider.webImageBytes != null && profileProvider.webImageBytes!.isNotEmpty) {
           imageWidget = ClipOval(
             child: Image.memory(
               profileProvider.webImageBytes!,
               fit: BoxFit.cover,
               width: 110,
               height: 110,
+              errorBuilder: (context, error, stackTrace) {
+                return buildAvatarImage(
+                  userProfileProvider.userModel.picture,
+                  userProfileProvider.userModel.fullName,
+                  radius: 55,
+                );
+              },
             ),
           );
-        } else if (!kIsWeb && profileProvider.imagePath.isNotEmpty) {
+        }
+        else if (!kIsWeb && profileProvider.imagePath.isNotEmpty) {
           imageWidget = ClipOval(
             child: Image.file(
               io.File(profileProvider.imagePath),

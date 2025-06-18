@@ -59,4 +59,8 @@ class SignUpProvider extends ChangeNotifier {
     hidePassword = !hidePassword;
     notifyListeners();
   }
+
+
+
 }
+

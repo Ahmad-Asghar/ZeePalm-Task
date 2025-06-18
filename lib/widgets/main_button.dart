@@ -24,7 +24,7 @@ class CustomMainButton extends StatelessWidget {
           side: borderColor != null ? BorderSide(color: borderColor!) : BorderSide.none,
         ),
         color: color,
-        height:height??6.h,
+        height:height??50,
         child: child,
         onPressed: (){
           onTap();

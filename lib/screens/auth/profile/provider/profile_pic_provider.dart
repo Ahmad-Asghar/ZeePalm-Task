@@ -2,27 +2,34 @@ import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/utils/validation_utils.dart';
 import '../../../../widgets/image_picker.dart';
 
 class ProfilePicProvider extends ChangeNotifier {
   String imagePath = '';
   Uint8List? webImageBytes;
 
-  Future<void> pickImage(BuildContext context) async {
-    final result = await ImagePickerProvider.pickImageCrossPlatform(context);
+Future<void> pickImage(BuildContext context) async {
+  final result = await ImagePickerProvider.pickImageCrossPlatform(context);
 
-    if (kIsWeb) {
-      if (result != null) {
-        webImageBytes = result;
-        notifyListeners();
-      }
+  if (kIsWeb) {
+    if (result != null) {
+      webImageBytes = result;
+      debugPrint('Web image bytes set. Length: ${webImageBytes?.length}');
+      notifyListeners();
     } else {
-      if (result != null && result is String) {
-        imagePath = result;
-        notifyListeners();
-      }
+      debugPrint('No image picked on web.');
+    }
+  } else {
+    if (result != null && result is String) {
+      imagePath = result;
+      debugPrint('Image path set: $imagePath');
+      notifyListeners();
+    } else {
+      debugPrint('No image picked on mobile.');
     }
   }
+}
 
   void clearImage() {
     imagePath = '';
@@ -30,7 +37,7 @@ class ProfilePicProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Map<String, dynamic>> uploadImageToFirebase() async {
+  Future<Map<String, dynamic>> uploadImageToFirebase(BuildContext context) async {
     String responseData = '';
     bool isSuccess = false;
     String? imageUrl;
@@ -51,6 +58,7 @@ class ProfilePicProvider extends ChangeNotifier {
         }
         uploadTask = ref.putFile(file);
       } else {
+        showSnackBar(context, 'No image selected to upload.');
         throw Exception('No image selected to upload.');
       }
 
@@ -59,6 +67,7 @@ class ProfilePicProvider extends ChangeNotifier {
       responseData = 'Image successfully uploaded!';
       isSuccess = true;
     } catch (e) {
+      showSnackBar(context, 'Error uploading image: $e');
       responseData = 'Error uploading image: $e';
       print(responseData);
     }
@@ -69,4 +78,5 @@ class ProfilePicProvider extends ChangeNotifier {
       'imageUrl': imageUrl
     };
   }
+
 }
